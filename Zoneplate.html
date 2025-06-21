@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZonePlate图片生成器 | 支持超大尺寸及详细介绍</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        :root {
+            --primary: #8A2BE2;
+            --primary-light: #9e46ec;
+            --primary-dark: #6f21b2;
+            --secondary: #4c74ff;
+            --success: #28a745;
+            --danger: #dc3545;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --gray: #6c757d;
+            --gray-light: #e9ecef;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(30deg);
+        }
+        
+        h1 {
+            font-weight: 700;
+            font-size: 3.5rem;
+            letter-spacing: 1px;
+            position: relative;
+            text-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            font-weight: 300;
+            max-width: 700px;
+            margin: 15px auto 0;
+            position: relative;
+            opacity: 0.9;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 30px;
+            gap: 30px;
+        }
+        
+        .control-panel {
+            flex: 1;
+            min-width: 320px;
+            padding: 30px;
+            background: linear-gradient(to bottom, #f9fbff, #f0f4f9);
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+        }
+        
+        .panel-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .panel-title i {
+            background: var(--primary);
+            color: white;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .form-row {
+            margin-bottom: 30px;
+        }
+        
+        .form-row label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 1.1rem;
+        }
+        
+        .dimension-inputs {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .dimension-inputs > div {
+            flex: 1;
+        }
+        
+        .dimension-inputs label {
+            font-size: 0.95rem;
+            color: var(--gray);
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .input-group {
+            position: relative;
+        }
+        
+        input[type="number"], .size-presets {
+            width: 100%;
+            padding: 18px 20px;
+            border-radius: 15px;
+            border: 2px solid #dfe4ea;
+            font-size: 1.1rem;
+            background: white;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            height: 60px;
+        }
+        
+        input[type="number"]:focus, .size-presets:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(138, 43, 226, 0.15);
+        }
+        
+        .size-presets {
+            background-color: white;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%238A2BE2' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 20px center;
+            appearance: none;
+            cursor: pointer;
+        }
+        
+        .preset-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        .preset-btn {
+            padding: 12px 20px;
+            background: #e6eaf0;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            font-weight: 600;
+            color: var(--gray);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .preset-btn:hover {
+            background: #dee2e8;
+        }
+        
+        .preset-btn.active {
+            background: var(--primary-light);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .info-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.03);
+            margin-top: 30px;
+        }
+        
+        .info-card h3 {
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .image-size-info {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--dark);
+            margin: 10px 0;
+            padding: 12px 20px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .value {
+            color: var(--primary);
+            font-weight: 700;
+        }
+        
+        .progress-container {
+            margin: 30px 0;
+            display: none;
+        }
+        
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            color: var(--gray);
+            margin-bottom: 10px;
+        }
+        
+        .progress-bar {
+            height: 12px;
+            background: #e9ecef;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-light), var(--primary));
+            border-radius: 6px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 20px;
+            min-height: 68px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-generate {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+        }
+        
+        .btn-download {
+            background: linear-gradient(45deg, #32a852, #28c76f);
+            color: white;
+        }
+        
+        .preview-section {
+            flex: 1.8;
+            min-width: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .preview-container {
+            background: #f8f9ff;
+            border-radius: 16px;
+            padding: 25px;
+            flex: 1;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        
+        .preview-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .preview-area {
+            background: white;
+            border-radius: 12px;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+        
+        canvas {
+            background-color: white;
+            max-width: 100%;
+            max-height: 100%;
+            display: none;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--gray);
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            color: #ced4da;
+            margin-bottom: 20px;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+        
+        .watermark {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: rgba(0, 0, 0, 0.3);
+            font-weight: 700;
+            font-size: 1.5rem;
+            pointer-events: none;
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            backdrop-filter: blur(4px);
+        }
+        
+        .size-warning {
+            background: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .size-warning i {
+            color: #ffc107;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+        
+        .info-section {
+            background: linear-gradient(to bottom, #f0f4ff, #e8edff);
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .info-section h2 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .info-section p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+            color: #444;
+        }
+        
+        .info-section h3 {
+            color: var(--primary-dark);
+            margin: 25px 0 15px;
+            font-size: 1.4rem;
+        }
+        
+        .info-section ul {
+            margin-left: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .info-section li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .math-formula {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: monospace;
+            font-size: 1.2rem;
+            margin: 20px 0;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 25px;
+            font-size: 1rem;
+            color: white;
+            background: linear-gradient(45deg, var(--primary-dark), #5542d1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .footer div {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .footer a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .footer a:hover {
+            color: white;
+        }
+        
+        @media (max-width: 992px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .preview-section {
+                min-width: 100%;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .dimension-inputs {
+                flex-direction: column;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            header {
+                padding: 30px 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-image"></i> ZonePlate图片生成器</h1>
+            <p class="subtitle">生成径向对称测试图案，支持超大尺寸图片生成（最高5000×5000像素）</p>
+        </header>
+        
+        <div class="content">
+            <div class="control-panel">
+                <h2 class="panel-title">
+                    <i class="fas fa-sliders-h"></i> 参数设置
+                </h2>
+                
+                <div class="form-row">
+                    <label>图片尺寸 (像素)</label>
+                    <div class="dimension-inputs">
+                        <div>
+                            <label>宽度</label>
+                            <div class="input-group">
+                                <input type="number" id="imageWidth" min="100" max="5000" value="800">
+                            </div>
+                        </div>
+                        <div>
+                            <label>高度</label>
+                            <div class="input-group">
+                                <input type="number" id="imageHeight" min="100" max="5000" value="800">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="size-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div>大尺寸图片（2000px以上）生成可能需要更长时间，请耐心等待</div>
+                    </div>
+                    
+                    <div class="preset-options">
+                        <div class="preset-btn active" data-width="501" data-height="501">标准(501x501)</div>
+                        <div class="preset-btn" data-width="1024" data-height="768">1024x768</div>
+                        <div class="preset-btn" data-width="1920" data-height="1080">1920x1080</div>
+                        <div class="preset-btn" data-width="3000" data-height="2000">3000x2000</div>
+                        <div class="preset-btn" data-width="5000" data-height="5000">最大(5000x5000)</div>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h3><i class="fas fa-info-circle"></i> 图像信息</h3>
+                    <div class="image-size-info">
+                        <span>宽度 × 高度：</span>
+                        <span class="value" id="dimensionDisplay">800 × 800</span>
+                    </div>
+                    <div class="image-size-info">
+                        <span>总像素数：</span>
+                        <span class="value" id="pixelCount">640,000</span>
+                    </div>
+                    <div class="image-size-info">
+                        <span>推荐尺寸：</span>
+                        <span class="value">501×501（标准）</span>
+                    </div>
+                </div>
+                
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-text">
+                        <span>生成进度</span>
+                        <span id="progressText">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress" id="progressBar"></div>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn-generate" id="generateBtn">
+                        <i class="fas fa-cog"></i> 生成图片
+                    </button>
+                    <button class="btn-download" id="downloadBtn">
+                        <i class="fas fa-download"></i> 下载BMP
+                    </button>
+                </div>
+                
+                <!-- 新增的介绍区域 -->
+                <div class="info-section">
+                    <h2><i class="fas fa-book-open"></i> 关于ZonePlate图像</h2>
+                    
+                    <h3>什么是ZonePlate图像？</h3>
+                    <p>ZonePlate（波带片）是一种径向对称的测试图案，广泛应用于图像处理领域。它的特点是图像中心频率较低，随着半径增加，空间频率逐渐升高。这种特殊的频率分布使其成为测试图像处理和计算机视觉算法的理想工具。</p>
+                    
+                    <h3>数学原理</h3>
+                    <p>ZonePlate图像由以下数学公式定义：</p>
+                    
+                    <div class="math-formula">
+                        g(x,y) = sin( (k_m * r²) / (2 * r_m) ) * <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[0.5 * tanh((r_m - r) / w) + 0.5]
+                    </div>
+                    
+                    <p>其中：</p>
+                    <ul>
+                        <li><strong>r = √(x² + y²)</strong> - 点到图像中心的距离</li>
+                        <li><strong>k_m</strong> - 最大频率参数（通常为0.7π）</li>
+                        <li><strong>r_m</strong> - 最大有效半径</li>
+                        <li><strong>w</strong> - 边缘平滑宽度（通常为r_m/10）</li>
+                    </ul>
+                    
+                    <h3>主要应用场景</h3>
+                    <ul>
+                        <li><strong>图像处理算法测试</strong> - 用于测试模糊、锐化等操作的频率响应</li>
+                        <li><strong>光学系统评估</strong> - 评估镜头的分辨率、畸变和像差</li>
+                        <li><strong>计算机视觉标定</strong> - 校准图像传感器和镜头系统</li>
+                        <li><strong>图像压缩测试</strong> - 评估JPEG等压缩算法在高频区域的性能</li>
+                        <li><strong>边缘检测验证</strong> - 测试不同半径的过渡带检测能力</li>
+                    </ul>
+                    
+                    <h3>特性分析</h3>
+                    <p>ZonePlate图像的独特之处在于其空间频率随着距离图像中心的半径增加而线性增加。这种特性使得在单张图像中可以同时测试从低频到高频的各种特性。</p>
+                    
+                    <p>公式中的tanh函数用于平滑图像边缘过渡，避免图像边界处的锐利截断，从而减少边界伪影的产生。</p>
+                </div>
+            </div>
+            
+            <div class="preview-section">
+                <div class="preview-container">
+                    <div class="preview-header">
+                        <h2 class="preview-title">效果预览</h2>
+                        <div class="file-info" id="fileInfo">尺寸：800×800px</div>
+                    </div>
+                    
+                    <div class="preview-area" id="previewArea">
+                        <canvas id="previewCanvas">您的浏览器不支持Canvas</canvas>
+                        
+                        <div class="empty-state" id="emptyState">
+                            <i class="fas fa-cloud-download-alt"></i>
+                            <h3>等待生成图片</h3>
+                            <p>设置图片尺寸后点击"生成图片"按钮</p>
+                        </div>
+                        
+                        <div class="watermark">anduony</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div>&copy; 2025 ZonePlate图片生成工具 | 基于 mathworks作者MATLAB算法实现</div>
+            <div>
+                <a href="#"><i class="fab fa-github"></i> 项目源码</a>
+                <a href="#"><i class="fas fa-book"></i> 使用说明</a>
+                <a href="#"><i class="fas fa-envelope"></i> 反馈问题</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取DOM元素
+            const canvas = document.getElementById('previewCanvas');
+            const ctx = canvas.getContext('2d');
+            const generateBtn = document.getElementById('generateBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const widthInput = document.getElementById('imageWidth');
+            const heightInput = document.getElementById('imageHeight');
+            const previewArea = document.getElementById('previewArea');
+            const emptyState = document.getElementById('emptyState');
+            const dimensionDisplay = document.getElementById('dimensionDisplay');
+            const pixelCount = document.getElementById('pixelCount');
+            const fileInfo = document.getElementById('fileInfo');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const presetBtns = document.querySelectorAll('.preset-btn');
+            
+            // 当前图片尺寸状态
+            let currentWidth = 800;
+            let currentHeight = 800;
+            let isGenerating = false;
+            let generatedImage = null;
+            
+            // 更新尺寸信息
+            function updateSizeInfo() {
+                dimensionDisplay.textContent = `${widthInput.value} × ${heightInput.value}`;
+                const count = parseInt(widthInput.value) * parseInt(heightInput.value);
+                pixelCount.textContent = count.toLocaleString();
+            }
+            
+            // 默认更新
+            updateSizeInfo();
+            
+            // 预设按钮事件
+            presetBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // 移除所有active类
+                    presetBtns.forEach(b => b.classList.remove('active'));
+                    // 给当前按钮添加active类
+                    this.classList.add('active');
+                    
+                    // 设置宽度和高度
+                    const width = parseInt(this.dataset.width);
+                    const height = parseInt(this.dataset.height);
+                    
+                    widthInput.value = width;
+                    heightInput.value = height;
+                    
+                    updateSizeInfo();
+                });
+            });
+            
+            // 尺寸输入变化事件
+            widthInput.addEventListener('input', updateSizeInfo);
+            heightInput.addEventListener('input', updateSizeInfo);
+            
+            // 生成图片函数（使用分块处理提高大图性能）
+            function generateImage(width, height) {
+                // 更新当前尺寸
+                currentWidth = width;
+                currentHeight = height;
+                
+                // 隐藏空状态
+                emptyState.style.display = 'none';
+                
+                // 显示进度条
+                progressContainer.style.display = 'block';
+                progressBar.style.width = '0%';
+                progressText.textContent = '0%';
+                
+                // 设置画布大小
+                canvas.width = width;
+                canvas.height = height;
+                canvas.style.display = 'block';
+                
+                // 开始时间标记
+                const startTime = Date.now();
+                
+                // 设置状态
+                isGenerating = true;
+                generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 生成中...';
+                generateBtn.disabled = true;
+                
+                // 使用requestAnimationFrame分块处理，避免阻塞UI
+                const blockSize = 50; // 每次处理的行数
+                let y = 0;
+                
+                // 创建图像数据
+                const imageData = ctx.createImageData(width, height);
+                const data = imageData.data;
+                
+                // 计算常量
+                const halfWidth = Math.floor(width / 2);
+                const halfHeight = Math.floor(height / 2);
+                const xStart = width % 2 === 1 ? -halfWidth : -halfWidth + 1;
+                const yStart = height % 2 === 1 ? -halfHeight : -halfHeight + 1;
+                
+                const km = 0.7 * Math.PI;
+                const rm = Math.max(halfWidth, halfHeight);
+                const w = rm / 10;
+                
+                // 动画函数
+                function generateChunk() {
+                    const endY = Math.min(y + blockSize, height);
+                    
+                    for (let j = y; j < endY; j++) {
+                        for (let i = 0; i < width; i++) {
+                            // 计算坐标位置
+                            const x = i + xStart;
+                            const posY = j + yStart;
+                            const r = Math.sqrt(x * x + posY * posY);
+                            
+                            // 公式计算
+                            const term1 = Math.sin((km * r * r) / (2 * rm));
+                            const term2 = 0.5 * Math.tanh((rm - r) / w) + 0.5;
+                            const g = term1 * term2;
+                            
+                            // 归一化到0-1，然后映射到0-255
+                            const intensity = (g + 1) / 2; // [0,1]
+                            const pixelValue = Math.max(0, Math.min(255, Math.floor(intensity * 255)));
+                            
+                            // 在图像数据中设置像素值
+                            const idx = (j * width + i) * 4;
+                            data[idx] = pixelValue;         // R
+                            data[idx + 1] = pixelValue;     // G
+                            data[idx + 2] = pixelValue;     // B
+                            data[idx + 3] = 255;            // A
+                        }
+                    }
+                    
+                    // 更新画布（部分渲染）
+                    ctx.putImageData(imageData, 0, 0, 0, y, width, endY);
+                    
+                    // 更新进度
+                    y = endY;
+                    const progress = Math.round((y / height) * 100);
+                    progressBar.style.width = `${progress}%`;
+                    progressText.textContent = `${progress}%`;
+                    
+                    // 继续处理或完成
+                    if (y < height) {
+                        setTimeout(generateChunk, 0);
+                    } else {
+                        // 添加水印
+                        addWatermark();
+                        
+                        // 完成时间计算
+                        const endTime = Date.now();
+                        const duration = (endTime - startTime) / 1000;
+                        fileInfo.textContent = `尺寸: ${width}×${height}px | 生成时间: ${duration.toFixed(1)}秒`;
+                        
+                        // 保存生成的图片
+                        generatedImage = new Image();
+                        generatedImage.src = canvas.toDataURL('image/png');
+                        
+                        // 重置按钮状态
+                        isGenerating = false;
+                        generateBtn.innerHTML = '<i class="fas fa-cog"></i> 生成图片';
+                        generateBtn.disabled = false;
+                        progressContainer.style.display = 'none';
+                    }
+                }
+                
+                // 开始分块处理
+                generateChunk();
+            }
+            
+            // 添加水印
+            function addWatermark() {
+                const text = "By anduony";
+                ctx.save();
+                
+                // 绘制半透明背景
+                ctx.font = 'bold ' + Math.min(80, canvas.width/20) + 'px Arial';
+                const textWidth = ctx.measureText(text).width;
+                const padding = canvas.width / 100;
+                const bgHeight = canvas.height / 20;
+                
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                const bgWidth = textWidth + padding * 2;
+                
+                ctx.fillRect(
+                    canvas.width - bgWidth - padding * 3, 
+                    canvas.height - bgHeight - padding * 3, 
+                    bgWidth, 
+                    bgHeight
+                );
+                
+                // 绘制文字
+                ctx.textBaseline = 'middle';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.fillText(
+                    text, 
+                    canvas.width - bgWidth / 2 - padding * 3, 
+                    canvas.height - bgHeight / 2 - padding * 3
+                );
+                
+                ctx.restore();
+            }
+            
+            // 生成按钮事件
+            generateBtn.addEventListener('click', function() {
+                if (isGenerating) return;
+                
+                const width = parseInt(widthInput.value);
+                const height = parseInt(heightInput.value);
+                
+                if (isNaN(width) || width < 100 || width > 5000) {
+                    alert("图片宽度应在100px-5000px之间");
+                    return;
+                }
+                
+                if (isNaN(height) || height < 100 || height > 5000) {
+                    alert("图片高度应在100px-5000px之间");
+                    return;
+                }
+                
+                generateImage(width, height);
+            });
+            
+            // BMP格式下载
+            function downloadBMP() {
+                if (!generatedImage) {
+                    alert("请先生成图片");
+                    return;
+                }
+                
+                const width = canvas.width;
+                const height = canvas.height;
+                
+                // 获取图像数据（包含水印）
+                const imageData = ctx.getImageData(0, 0, width, height);
+                const data = imageData.data;
+                
+                // 显示下载提示
+                downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 准备中...';
+                
+                // 使用setTimeout避免阻塞UI
+                setTimeout(() => {
+                    try {
+                        // BMP文件头结构
+                        const headerSize = 54;
+                        const bytesPerPixel = 3;
+                        const rowSize = Math.ceil((width * bytesPerPixel) / 4) * 4;
+                        const imageDataSize = rowSize * height;
+                        const fileSize = headerSize + imageDataSize;
+                        
+                        // 创建ArrayBuffer和DataView
+                        const buffer = new ArrayBuffer(fileSize);
+                        const view = new DataView(buffer);
+                        
+                        // BMP文件头
+                        view.setUint8(0, 0x42); // 'B'
+                        view.setUint8(1, 0x4D); // 'M'
+                        view.setUint32(2, fileSize, true);
+                        view.setUint32(6, 0, true); // 保留字段
+                        view.setUint32(10, headerSize, true); // 数据偏移
+                        
+                        // DIB头 (BITMAPINFOHEADER)
+                        view.setUint32(14, 40, true); // 信息头大小
+                        view.setInt32(18, width, true);
+                        view.setInt32(22, height, true);
+                        view.setUint16(26, 1, true); // 颜色平面数
+                        view.setUint16(28, bytesPerPixel * 8, true); // 每像素位数
+                        view.setUint32(30, 0, true); // 压缩方式 (无压缩)
+                        view.setUint32(34, imageDataSize, true); // 图像数据大小
+                        view.setUint32(38, 0, true); // 水平分辨率
+                        view.setUint32(42, 0, true); // 垂直分辨率
+                        view.setUint32(46, 0, true); // 调色板颜色数
+                        view.setUint32(50, 0, true); // 重要颜色数
+                        
+                        // 填充像素数据（从下到上）
+                        let offset = headerSize;
+                        for (let y = height - 1; y >= 0; y--) {
+                            for (let x = 0; x < width; x++) {
+                                const srcOffset = (y * width + x) * 4;
+                                
+                                view.setUint8(offset + 0, data[srcOffset + 2]); // B
+                                view.setUint8(offset + 1, data[srcOffset + 1]); // G
+                                view.setUint8(offset + 2, data[srcOffset + 0]); // R
+                                offset += 3;
+                            }
+                            // 行填充（对齐到4字节）
+                            offset += rowSize - (width * bytesPerPixel);
+                        }
+                        
+                        // 创建Blob并下载
+                        const blob = new Blob([buffer], {type: 'image/bmp'});
+                        const url = URL.createObjectURL(blob);
+                        
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `ZonePlate-${width}x${height}.bmp`;
+                        document.body.appendChild(a);
+                        a.click();
+                        
+                        setTimeout(() => {
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                        }, 100);
+                        
+                        downloadBtn.innerHTML = '<i class="fas fa-download"></i> 下载BMP';
+                    } catch (e) {
+                        console.error("生成BMP失败:", e);
+                        alert("生成BMP时出错: " + e.message);
+                        downloadBtn.innerHTML = '<i class="fas fa-download"></i> 下载BMP';
+                    }
+                }, 100);
+            }
+            
+            // 下载按钮事件
+            downloadBtn.addEventListener('click', downloadBMP);
+        });
+    </script>
+</body>
+</html>
